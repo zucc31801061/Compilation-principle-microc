@@ -21,11 +21,18 @@ type token =
   | LT
   | GE
   | LE
+  | PLUSASSIGN
+  | MINUSASSIGN
+  | TIMESASSIGN
+  | DIVASSIGN
+  | MODASSIGN
   | PLUS
   | MINUS
   | TIMES
   | DIV
   | MOD
+  | SELFPLUS
+  | SELFMINUS
   | CHAR
   | ELSE
   | IF
@@ -62,11 +69,18 @@ type tokenId =
     | TOKEN_LT
     | TOKEN_GE
     | TOKEN_LE
+    | TOKEN_PLUSASSIGN
+    | TOKEN_MINUSASSIGN
+    | TOKEN_TIMESASSIGN
+    | TOKEN_DIVASSIGN
+    | TOKEN_MODASSIGN
     | TOKEN_PLUS
     | TOKEN_MINUS
     | TOKEN_TIMES
     | TOKEN_DIV
     | TOKEN_MOD
+    | TOKEN_SELFPLUS
+    | TOKEN_SELFMINUS
     | TOKEN_CHAR
     | TOKEN_ELSE
     | TOKEN_IF

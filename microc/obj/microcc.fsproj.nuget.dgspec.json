@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\计算机科学\\study2021上\\编程语言原理与编译\\课程资料\\sigcc-plzoofs-master\\plzoofs\\microc\\microcc.fsproj": {}
+    "D:\\计算机科学\\study2021上\\编程语言原理与编译\\大作业\\microc\\microcc.fsproj": {}
   },
   "projects": {
-    "D:\\计算机科学\\study2021上\\编程语言原理与编译\\课程资料\\sigcc-plzoofs-master\\plzoofs\\microc\\microcc.fsproj": {
+    "D:\\计算机科学\\study2021上\\编程语言原理与编译\\大作业\\microc\\microcc.fsproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\计算机科学\\study2021上\\编程语言原理与编译\\课程资料\\sigcc-plzoofs-master\\plzoofs\\microc\\microcc.fsproj",
+        "projectUniqueName": "D:\\计算机科学\\study2021上\\编程语言原理与编译\\大作业\\microc\\microcc.fsproj",
         "projectName": "microcc",
-        "projectPath": "D:\\计算机科学\\study2021上\\编程语言原理与编译\\课程资料\\sigcc-plzoofs-master\\plzoofs\\microc\\microcc.fsproj",
+        "projectPath": "D:\\计算机科学\\study2021上\\编程语言原理与编译\\大作业\\microc\\microcc.fsproj",
         "packagesPath": "C:\\Users\\lenovo\\.nuget\\packages\\",
-        "outputPath": "D:\\计算机科学\\study2021上\\编程语言原理与编译\\课程资料\\sigcc-plzoofs-master\\plzoofs\\microc\\obj\\",
+        "outputPath": "D:\\计算机科学\\study2021上\\编程语言原理与编译\\大作业\\microc\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\lenovo\\AppData\\Roaming\\NuGet\\NuGet.Config"

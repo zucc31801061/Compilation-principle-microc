@@ -54,15 +54,15 @@ dotnet run -p interpc.fsproj -g ex1.c 8  //显示token AST 等调试信息
 
 ```sh
 //生成扫描器
-dotnet "C:\Users\gm\.nuget\packages\fslexyacc\10.2.0\build\/fslex/netcoreapp3.1\fslex.dll"  -o "CLex.fs" --module CLex --unicode CLex.fsl
+dotnet "C:\Users\lenovo\.nuget\packages\fslexyacc\10.2.0\build\fslex\netcoreapp3.1\fslex.dll"  -o "CLex.fs" --module CLex --unicode CLex.fsl
 
 //生成分析器
-dotnet "C:\Users\gm\.nuget\packages\fslexyacc\10.2.0\build\/fsyacc/netcoreapp3.1\fsyacc.dll"  -o "CPar.fs" --module CPar CPar.fsy
+dotnet "C:\Users\lenovo\.nuget\packages\fslexyacc\10.2.0\build\fsyacc\netcoreapp3.1\fsyacc.dll"  -o "CPar.fs" --module CPar CPar.fsy
 
 //命令行运行程序
 dotnet fsi 
 
-//#r "./bin/Debug/net5.0/FsLexYacc.Runtime.dll ";;     
+//#r "./bin/Debug/net5.0/FsLexYacc.Runtime.dll";;     
 #r "nuget: FsLexYacc";;  //添加包引用
 #load "Absyn.fs" "Debug.fs" "CPar.fs" "CLex.fs" "Parse.fs" "Interp.fs" "ParseAndRun.fs" ;; 
 
@@ -164,7 +164,3 @@ javac Machinetrace.java
 java Machinetrace ex9.out 0
 java Machinetrace ex9.out 3
 ```
-
-
-
-
