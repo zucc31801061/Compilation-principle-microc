@@ -41,6 +41,7 @@ and stmt =
   | Return of expr option            (* Return from method          *)
   | Block of stmtordec list          (* Block: grouping and scope   *)
   | For of expr * expr * expr * stmt (* for(i = 0; i <= n; i++)     *)
+  | DoWhile of  stmt * expr          (* DoWhile loop                *)
                                                                    
 and stmtordec =
   | Dec of typ * string              (* Local variable declaration  *)
