@@ -206,9 +206,9 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\计算机科学\\study2021上\\编程语言原理与编译\\大作业\\microc\\interpc.fsproj",
-      "projectName": "interpc",
-      "projectPath": "D:\\计算机科学\\study2021上\\编程语言原理与编译\\大作业\\microc\\interpc.fsproj",
+      "projectUniqueName": "D:\\计算机科学\\study2021上\\编程语言原理与编译\\大作业\\microc\\microc.fsproj",
+      "projectName": "microc",
+      "projectPath": "D:\\计算机科学\\study2021上\\编程语言原理与编译\\大作业\\microc\\microc.fsproj",
       "packagesPath": "C:\\Users\\lenovo\\.nuget\\packages\\",
       "outputPath": "D:\\计算机科学\\study2021上\\编程语言原理与编译\\大作业\\microc\\obj\\",
       "projectStyle": "PackageReference",

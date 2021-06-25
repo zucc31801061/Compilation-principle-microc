@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "T300C6gHAgQyNrASBqGrxYunhPVhn+WybL9vC8QWFDE8+FR6BQ1QFp5+fCz9fN59si+5bfV7PuK5hUxjEOS95Q==",
+  "dgSpecHash": "teAsyNOL39idFMSVWckR0Ju0xVxOMCsb9FtDMykSKbXNBXRjRZ7AKN4OK+o00mH5Hcs1sjVo6nKXu0XC8PzKUw==",
   "success": true,
-  "projectFilePath": "D:\\计算机科学\\study2021上\\编程语言原理与编译\\大作业\\microc\\interpc.fsproj",
+  "projectFilePath": "D:\\计算机科学\\study2021上\\编程语言原理与编译\\大作业\\microc\\microc.fsproj",
   "expectedPackageFiles": [
     "C:\\Users\\lenovo\\.nuget\\packages\\fsharp.core\\5.0.0\\fsharp.core.5.0.0.nupkg.sha512",
     "C:\\Users\\lenovo\\.nuget\\packages\\fslexyacc\\10.2.0\\fslexyacc.10.2.0.nupkg.sha512",

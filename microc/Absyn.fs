@@ -44,6 +44,7 @@ and stmt =
                                                                    
 and stmtordec =
   | Dec of typ * string              (* Local variable declaration  *)
+  | DecAssign of typ * string * expr (* declaration and assign      *)
   | Stmt of stmt                     (* A statement                 *)
 
 and topdec = 
