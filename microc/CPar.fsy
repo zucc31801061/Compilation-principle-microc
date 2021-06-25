@@ -16,11 +16,11 @@ let nl = CstI 10 //  \n 的 ASCII 码
 %token <int> CSTINT CSTBOOL  // <int> 是词元的语义值类型
 %token <string> CSTSTRING NAME
 
-%token CHAR ELSE IF INT NULL PRINT PRINTLN RETURN VOID WHILE FOR DO
+%token CHAR ELSE IF INT NULL PRINT PRINTLN RETURN VOID WHILE FOR DO SWITCH CASE DEFAULT BREAK
 %token PLUS MINUS TIMES DIV MOD SELFPLUS SELFMINUS
 %token EQ NE GT LT GE LE PLUSASSIGN MINUSASSIGN TIMESASSIGN DIVASSIGN MODASSIGN
 %token NOT SEQOR SEQAND
-%token LPAR RPAR LBRACE RBRACE LBRACK RBRACK SEMI COMMA ASSIGN AMP
+%token LPAR RPAR LBRACE RBRACE LBRACK RBRACK SEMI COMMA ASSIGN AMP COLON
 %token EOF
 
 %right ASSIGN             /* lowest precedence */  // 最下面的优先级最高
@@ -128,7 +128,17 @@ StmtM:  /* No unbalanced if-else */
   | WHILE LPAR Expr RPAR StmtM          { While($3, $5)        }
   | FOR LPAR Expr SEMI Expr SEMI Expr RPAR StmtM  { For($3, $5, $7, $9) }
   | DO StmtM WHILE LPAR Expr RPAR SEMI  { DoWhile($2, $5)      }
+  | SWITCH LPAR Expr RPAR LBRACE CaseList RBRACE { Switch($3, $6)   }
+  | SWITCH LPAR Expr RPAR LBRACE CaseList DEFAULT COLON Stmt RBRACE { SwitchDefault($3, $6, $9)  }
 ;
+
+CaseList:
+                                        { []                   }
+  | CaseDec                             { [$1]                 }
+  | CaseDec CaseList                    { $1 :: $2             }
+
+CaseDec:
+    CASE Expr COLON Stmt                { ($2, $4)             }
 
 StmtU:
     IF LPAR Expr RPAR StmtM ELSE StmtU  { If($3, $5, $7)       }

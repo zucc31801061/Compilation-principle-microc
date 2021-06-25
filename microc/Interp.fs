@@ -258,6 +258,24 @@ let rec exec stmt (locEnv: locEnv) (gloEnv: gloEnv) (store: store) : store =
                 store2 //退出循环返回 环境store2
 
         loop (exec body locEnv gloEnv store)
+    | Switch(e1, caseList) -> 
+      let (v1, store1) = eval e1 locEnv gloEnv store
+      let rec loop caseList1 = 
+              match caseList1 with
+              | [] -> store
+              | case :: caseList2 -> let (v2, store2) = eval (fst case) locEnv gloEnv store1
+                                     if v1<>v2 then loop caseList2
+                                               else exec (snd case) locEnv gloEnv store2
+      loop caseList
+    | SwitchDefault(e1, caseList, def) -> 
+      let (v1, store1) = eval e1 locEnv gloEnv store
+      let rec loop caseList1 = 
+              match caseList1 with
+              | [] -> exec def locEnv gloEnv store1
+              | case :: caseList2 -> let (v2, store2) = eval (fst case) locEnv gloEnv store1
+                                     if v1<>v2 then loop caseList2
+                                               else exec (snd case) locEnv gloEnv store2
+      loop caseList
     | Return _ -> failwith "return not implemented" // 解释器没有实现 return
 
 and stmtordec stmtordec locEnv gloEnv store =

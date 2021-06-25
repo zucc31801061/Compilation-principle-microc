@@ -163,6 +163,26 @@ let rec cStmt stmt (varEnv: VarEnv) (funEnv: FunEnv) : instr list =
                 @ [ INCSP -1 ]
                   @ [ Label labtest ]
                     @ cExpr e2 varEnv funEnv @ [ IFNZRO labbegin ]
+    | Switch(e1, caseList) ->
+      let lab = newLabel()
+      let tmp = cExpr e1 varEnv funEnv 
+      let rec getcode cases =
+        match cases with
+        | [] -> []
+        | (e, case)::es -> 
+          let sublab = newLabel()
+          tmp @ (cExpr e varEnv funEnv) @ [EQ] @ [IFZERO sublab] @ (cStmt case varEnv funEnv) @ [GOTO lab] @ [Label sublab] @ getcode es
+      (getcode caseList) @ [Label lab]
+    | SwitchDefault(e1, caseList, def) ->
+      let lab = newLabel()
+      let tmp = cExpr e1 varEnv funEnv 
+      let rec getcode cases =
+        match cases with
+        | [] -> cStmt def varEnv funEnv
+        | (e, case)::es -> 
+          let sublab = newLabel()
+          tmp @ (cExpr e varEnv funEnv) @ [EQ] @ [IFZERO sublab] @ (cStmt case varEnv funEnv) @ [GOTO lab] @ [Label sublab] @ getcode es
+      (getcode caseList) @ [Label lab]
     | Expr e -> cExpr e varEnv funEnv @ [ INCSP -1 ]
     | Block stmts ->
         let rec loop stmts varEnv =

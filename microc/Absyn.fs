@@ -42,6 +42,9 @@ and stmt =
   | Block of stmtordec list          (* Block: grouping and scope   *)
   | For of expr * expr * expr * stmt (* for(i = 0; i <= n; i++)     *)
   | DoWhile of  stmt * expr          (* DoWhile loop                *)
+  | Switch of expr * (expr * stmt) list                (* switch no default           *)
+  | SwitchDefault of expr * (expr * stmt) list * stmt  (* switch with default         *)
+  | Break
                                                                    
 and stmtordec =
   | Dec of typ * string              (* Local variable declaration  *)
