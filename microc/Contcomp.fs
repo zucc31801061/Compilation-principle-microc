@@ -103,7 +103,21 @@ let rec addCST i C =
     | (0, IFNZRO lab :: C1) -> C1
     | (_, IFNZRO lab :: C1) -> addGOTO lab C1
     | _                     -> CSTI i :: C
-            
+
+let rec addIFZERO lab C =
+    match C with
+    | (GOTO lab1 :: Label lab2 :: C1) -> if lab = lab2 then
+                                                        IFNZRO lab1 :: Label lab :: C1
+                                                        else IFZERO lab :: C
+    | _ -> IFZERO lab :: C
+
+let rec addIFNZRO lab C =
+    match C with
+    | (GOTO lab1 :: Label lab2 :: C1) -> if lab = lab2 then
+                                                        IFZERO lab1 :: Label lab :: C1
+                                                        else IFNZRO lab :: C
+    | _ -> IFNZRO lab :: C
+
 (* ------------------------------------------------------------------- *)
 
 (* Simple environment operations *)
@@ -195,6 +209,18 @@ let rec cStmt stmt (varEnv : VarEnv) (funEnv : FunEnv) (C : instr list) : instr 
       let (jumptest, C1) = 
            makeJump (cExpr e varEnv funEnv (IFNZRO labbegin :: C))
       addJump jumptest (Label labbegin :: cStmt body varEnv funEnv C1)
+    | DoWhile(body, e) ->
+      let labbegin = newLabel()
+      let f = cStmt body varEnv funEnv C
+      let (jumptest, C1) = 
+           makeJump (cExpr e varEnv funEnv (IFNZRO labbegin :: f))
+      addJump jumptest (Label labbegin :: cStmt body varEnv funEnv C1)
+    | For(e1, e2, e3, body) ->
+      let labbegin = newLabel()
+      let C1 = cExpr e1 varEnv funEnv C
+      let (jumptest, C2) = 
+           makeJump (cExpr e2 varEnv funEnv (IFNZRO labbegin :: C1))
+      addJump jumptest (Label labbegin :: cStmt body varEnv funEnv (cExpr e3 varEnv funEnv C2) )
     | Expr e -> 
       cExpr e varEnv funEnv (addINCSP -1 C) 
     | Block stmts -> 
@@ -242,8 +268,20 @@ and bStmtordec stmtOrDec varEnv : bstmtordec * VarEnv =
 
 and cExpr (e : expr) (varEnv : VarEnv) (funEnv : FunEnv) (C : instr list) : instr list =
     match e with
+    | PreInc acc     -> cAccess acc varEnv funEnv ( [DUP] @ [LDI] @ [CSTI 1] @ [ADD] @ [STI] @ C)
+    | PreDec acc     -> cAccess acc varEnv funEnv ( [DUP] @ [LDI] @ [CSTI 1] @ [SUB] @ [STI] @ C)
     | Access acc     -> cAccess acc varEnv funEnv (LDI :: C)
     | Assign(acc, e) -> cAccess acc varEnv funEnv (cExpr e varEnv funEnv (STI :: C))
+    | AssignPrim(ope, acc, e) ->
+      cAccess acc varEnv funEnv
+        (GETBP :: LDI :: cExpr e varEnv funEnv
+           (match ope with
+            | "+="  -> ADD :: STI :: C
+            | "-="  -> SUB :: STI :: C
+            | "*="  -> MUL :: STI :: C
+            | "/="  -> DIV :: STI :: C
+            | "%="  -> MOD :: STI :: C
+            | _     -> failwith "unknown assign-primitive"))
     | CstI i         -> addCST i C
     | Addr acc       -> cAccess acc varEnv funEnv C
     | Prim1(ope, e1) ->
@@ -269,6 +307,10 @@ and cExpr (e : expr) (varEnv : VarEnv) (funEnv : FunEnv) (C : instr list) : inst
             | ">"   -> SWAP :: LT :: C
             | "<="  -> SWAP :: LT :: addNOT C
             | _     -> failwith "unknown primitive 2"))
+    | Prim3(e1, e2, e3) ->
+      let (jumpend, C1) = makeJump C
+      let (labfalse, C2) = addLabel (cExpr e3 varEnv funEnv C1)
+      cExpr e1 varEnv funEnv (IFZERO labfalse :: cExpr e2 varEnv funEnv (addJump jumpend C2))
     | Andalso(e1, e2) ->
       match C with
       | IFZERO lab :: _ ->

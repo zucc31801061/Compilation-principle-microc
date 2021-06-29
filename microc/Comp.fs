@@ -6,14 +6,14 @@
 
    A value is an integer; it may represent an integer or a pointer,
    where a pointer is just an address in the store (of a variable or
-   pointer or the base address of an array).
+   pointer or the base address of an array).  
 
    The compile-time environment maps a global variable to a fixed
    store address, and maps a local variable to an offset into the
    current stack frame, relative to its bottom.  The run-time store
    maps a location to an integer.  This freely permits pointer
    arithmetics, as in real C.  A compile-time function environment
-   maps a function name to a code label.  In the generated code,
+   maps a function name to a code label.  In the generated code, 
    labels are replaced by absolute code addresses.
 
    Expressions can have side effects.  A function takes a list of
@@ -27,7 +27,7 @@
    predecessor of C) represented array variables.
 
    The store behaves as a stack, so all data except global variables
-   are stack allocated: variables, function parameters and arrays.
+   are stack allocated: variables, function parameters and arrays.  
 *)
 
 module Comp
@@ -43,18 +43,18 @@ open Debug
 
 type 'data Env = (string * 'data) list
 
-let rec lookup env x =
-    match env with
-    | [] -> failwith (x + " not found")
-    | (y, v) :: yr -> if x = y then v else lookup yr x
+let rec lookup env x = 
+    match env with 
+    | []         -> failwith (x + " not found")
+    | (y, v)::yr -> if x=y then v else lookup yr x
 
 (* A global variable has an absolute address, a local one has an offset: *)
 
-type Var =
-    | Glovar of int (* absolute address in stack           *)
-    | Locvar of int (* address relative to bottom of frame *)
+type Var = 
+     | Glovar of int                   (* absolute address in stack           *)
+     | Locvar of int                   (* address relative to bottom of frame *)
 
-(* The variable environment keeps track of global and local variables, and
+(* The variable environment keeps track of global and local variables, and 
    keeps track of next available offset for local variables *)
 
 type VarEnv = (Var * typ) Env * int
@@ -66,103 +66,96 @@ type FunEnv = (label * typ option * Paramdecs) Env
 
 (* Bind declared variable in env and generate code to allocate it: *)
 
-let allocate (kind: int -> Var) (typ, x) (varEnv: VarEnv) : VarEnv * instr list =
-    printf "allocate called!\n"
-    let (env, fdepth) = varEnv
-
+let allocate (kind : int -> Var) (typ, x) (varEnv : VarEnv) : VarEnv * instr list =
+    printf "allocate called!\n"      
+    let (env, fdepth) = varEnv 
     match typ with
-    | TypA (TypA _, _) -> raise (Failure "allocate: array of arrays not permitted")
-    | TypA (t, Some i) ->
-        let newEnv =
-            ((x, (kind (fdepth + i), typ)) :: env, fdepth + i + 1) //数组占用 i个位置
+    | TypA (TypA _, _) -> 
+      raise (Failure "allocate: array of arrays not permitted")
+    | TypA (t, Some i) -> 
+      let newEnv = ((x, (kind (fdepth+i), typ)) :: env, fdepth+i+1) //数组占用 i个位置
+      let code = [INCSP i; GETSP; CSTI (i-1); SUB]
+      (newEnv, code)
+    | _ -> 
+      let newEnv = ((x, (kind (fdepth), typ)) :: env, fdepth+1)
+      let code = [INCSP 1]
 
-        let code = [ INCSP i; GETSP; CSTI(i - 1); SUB ]
-        (newEnv, code)
-    | _ ->
-        let newEnv =
-            ((x, (kind (fdepth), typ)) :: env, fdepth + 1)
-
-        let code = [ INCSP 1 ]
-
-        printf "new varEnv: %A\n" newEnv // 调试 显示分配后环境变化
-        (newEnv, code)
+      printf "new varEnv: %A\n" newEnv // 调试 显示分配后环境变化
+      (newEnv, code)
 
 (* Bind declared parameters in env: *)
 
-let bindParam (env, fdepth) (typ, x) : VarEnv =
-    ((x, (Locvar fdepth, typ)) :: env, fdepth + 1)
+let bindParam (env, fdepth) (typ, x)  : VarEnv = 
+    ((x, (Locvar fdepth, typ)) :: env , fdepth+1)
 
-let bindParams paras ((env, fdepth): VarEnv) : VarEnv = List.fold bindParam (env, fdepth) paras
+let bindParams paras ((env, fdepth) : VarEnv) : VarEnv = 
+    List.fold bindParam (env, fdepth) paras;
 
 (* ------------------------------------------------------------------- *)
 
 (* Build environments for global variables and functions *)
 
-let makeGlobalEnvs (topdecs: topdec list) : VarEnv * FunEnv * instr list =
-    let rec addv decs varEnv funEnv =
-        info (fun () -> printf "Global funEnv: %A\n" funEnv)
-
-        match decs with
-        | [] -> (varEnv, funEnv, [])
-        | dec :: decr ->
-            match dec with
-            | Vardec (typ, var) ->
-                let (varEnv1, code1) = allocate Glovar (typ, var) varEnv
-                let (varEnvr, funEnvr, coder) = addv decr varEnv1 funEnv
-                (varEnvr, funEnvr, code1 @ coder)
-            | Fundec (tyOpt, f, xs, body) -> addv decr varEnv ((f, (newLabel (), tyOpt, xs)) :: funEnv)
-
+let makeGlobalEnvs (topdecs : topdec list) : VarEnv * FunEnv * instr list = 
+    let rec addv decs varEnv funEnv = 
+        info (fun () ->printf "Global funEnv: %A\n" funEnv)
+        match decs with 
+        | []         -> (varEnv, funEnv, [])
+        | dec::decr  -> 
+          match dec with
+          | Vardec (typ, var) ->
+            let (varEnv1, code1)        = allocate Glovar (typ, var) varEnv
+            let (varEnvr, funEnvr, coder) = addv decr varEnv1 funEnv
+            (varEnvr, funEnvr, code1 @ coder)
+          | Fundec (tyOpt, f, xs, body) ->
+            addv decr varEnv ((f, (newLabel(), tyOpt, xs)) :: funEnv)
     addv topdecs ([], 0) []
 
 (* ------------------------------------------------------------------- *)
 
-(* Compiling micro-C statements:
+(* Compiling micro-C statements: 
    * stmt    is the statement to compile
-   * varenv  is the local and global variable environment
+   * varenv  is the local and global variable environment 
    * funEnv  is the global function environment
 *)
 
-let rec cStmt stmt (varEnv: VarEnv) (funEnv: FunEnv) : instr list =
+let rec cStmt stmt (varEnv : VarEnv) (funEnv : FunEnv) : instr list = 
     match stmt with
-    | If (e, stmt1, stmt2) ->
-        let labelse = newLabel ()
-        let labend = newLabel ()
+    | If (e, stmt1, stmt2) -> 
+      let labelse = newLabel()
+      let labend  = newLabel()
+      cExpr e varEnv funEnv @ [IFZERO labelse] 
+      @ cStmt stmt1 varEnv funEnv @ [GOTO labend]
+      @ [Label labelse] @ cStmt stmt2 varEnv funEnv
+      @ [Label labend]           
+    | While(e, body) ->
+      let labbegin = newLabel()
+      let labtest  = newLabel()
+      [GOTO labtest; Label labbegin] @ cStmt body varEnv funEnv
+      @ [Label labtest] @ cExpr e varEnv funEnv @ [IFNZRO labbegin]
+    | DoWhile(body, e) ->
+      let labbegin = newLabel()
+      let labtest  = newLabel()
+      cStmt body varEnv funEnv @ [GOTO labtest; Label labbegin] @ cStmt body varEnv funEnv
+      @ [Label labtest] @ cExpr e varEnv funEnv @ [IFNZRO labbegin]
+    | For(e1, e2, e3, body) ->         
+      let labbegin = newLabel()
+      let labtest  = newLabel()
 
-        cExpr e varEnv funEnv
-        @ [ IFZERO labelse ]
-          @ cStmt stmt1 varEnv funEnv
-            @ [ GOTO labend ]
-              @ [ Label labelse ]
-                @ cStmt stmt2 varEnv funEnv @ [ Label labend ]
-    | While (e, body) ->
-        let labbegin = newLabel ()
-        let labtest = newLabel ()
+      cExpr e1 varEnv funEnv @ [INCSP -1]
+      @ [GOTO labtest; Label labbegin] @ cStmt body varEnv funEnv
+      @ cExpr e3 varEnv funEnv @ [INCSP -1]
+      @ [Label labtest] @ cExpr e2 varEnv funEnv @ [IFNZRO labbegin]
+    | ForIn(e1, e2, e3, body) ->         
+      let labbegin = newLabel()
+      let labtest  = newLabel()
+      let rec tmp stat =
+            match stat with
+            | Access (c) -> c 
 
-        [ GOTO labtest; Label labbegin ]
-        @ cStmt body varEnv funEnv
-          @ [ Label labtest ]
-            @ cExpr e varEnv funEnv @ [ IFNZRO labbegin ]
-    | DoWhile (body, e) ->
-        let labbegin = newLabel ()
-        let labtest = newLabel ()
-
-        cStmt body varEnv funEnv
-        @ [ GOTO labtest; Label labbegin ]
-          @ cStmt body varEnv funEnv
-            @ [ Label labtest ]
-              @ cExpr e varEnv funEnv @ [ IFNZRO labbegin ]
-    | For (e1, e2, e3, body) ->
-        let labbegin = newLabel ()
-        let labtest = newLabel ()
-
-        cExpr e1 varEnv funEnv
-        @ [ INCSP -1 ]
-          @ [ GOTO labtest; Label labbegin ]
-            @ cStmt body varEnv funEnv
-              @ cExpr e3 varEnv funEnv
-                @ [ INCSP -1 ]
-                  @ [ Label labtest ]
-                    @ cExpr e2 varEnv funEnv @ [ IFNZRO labbegin ]
+      cExpr (Assign(tmp e1, e2)) varEnv funEnv @ [INCSP -1]
+      @ [GOTO labtest; Label labbegin] @ cStmt body varEnv funEnv
+      @ cExpr (PreInc (tmp e1)) varEnv funEnv @ [INCSP -1]
+      @ [Label labtest] @ cExpr (Prim2("<",e1,e3)) varEnv funEnv @ [IFNZRO labbegin]
     | Switch(e1, caseList) ->
       let lab = newLabel()
       let tmp = cExpr e1 varEnv funEnv 
@@ -183,26 +176,30 @@ let rec cStmt stmt (varEnv: VarEnv) (funEnv: FunEnv) : instr list =
           let sublab = newLabel()
           tmp @ (cExpr e varEnv funEnv) @ [EQ] @ [IFZERO sublab] @ (cStmt case varEnv funEnv) @ [GOTO lab] @ [Label sublab] @ getcode es
       (getcode caseList) @ [Label lab]
-    | Expr e -> cExpr e varEnv funEnv @ [ INCSP -1 ]
-    | Block stmts ->
-        let rec loop stmts varEnv =
-            match stmts with
-            | [] -> (snd varEnv, [])
-            | s1 :: sr ->
-                let (varEnv1, code1) = cStmtOrDec s1 varEnv funEnv
-                let (fdepthr, coder) = loop sr varEnv1
-                (fdepthr, code1 @ coder)
+    | Expr e -> 
+      cExpr e varEnv funEnv @ [INCSP -1]
+    | Block stmts -> 
+      
+      let rec loop stmts varEnv =
+          match stmts with 
+          | []     -> (snd varEnv, [])
+          | s1::sr -> 
+            let (varEnv1, code1) = cStmtOrDec s1 varEnv funEnv
+            let (fdepthr, coder) = loop sr varEnv1 
+            (fdepthr, code1 @ coder)
+      
+      let (fdepthend, code) = loop stmts varEnv
 
-        let (fdepthend, code) = loop stmts varEnv
+      code @ [INCSP(snd varEnv - fdepthend)]
+      
+    | Return None -> 
+      [RET (snd varEnv - 1)]
+    | Return (Some e) -> 
+      cExpr e varEnv funEnv @ [RET (snd varEnv)]
 
-        code @ [ INCSP(snd varEnv - fdepthend) ]
-
-    | Return None -> [ RET(snd varEnv - 1) ]
-    | Return (Some e) -> cExpr e varEnv funEnv @ [ RET(snd varEnv) ]
-
-and cStmtOrDec stmtOrDec (varEnv: VarEnv) (funEnv: FunEnv) : VarEnv * instr list =
-    match stmtOrDec with
-    | Stmt stmt -> (varEnv, cStmt stmt varEnv funEnv)
+and cStmtOrDec stmtOrDec (varEnv : VarEnv) (funEnv : FunEnv) : VarEnv * instr list = 
+    match stmtOrDec with 
+    | Stmt stmt    -> (varEnv, cStmt stmt varEnv funEnv) 
     | Dec (typ, x) -> allocate Locvar (typ, x) varEnv
     | DecAssign (typ, x, expr) ->
         let acc = AccVar x
@@ -211,180 +208,165 @@ and cStmtOrDec stmtOrDec (varEnv: VarEnv) (funEnv: FunEnv) : VarEnv * instr list
         let tmp = cAccess acc ve funEnv @ c @ [ STI ]
         (ve, tmp)
 
-(* Compiling micro-C expressions:
+(* Compiling micro-C expressions: 
 
    * e       is the expression to compile
-   * varEnv  is the local and gloval variable environment
+   * varEnv  is the local and gloval variable environment 
    * funEnv  is the global function environment
 
    Net effect principle: if the compilation (cExpr e varEnv funEnv) of
    expression e returns the instruction sequence instrs, then the
    execution of instrs will leave the rvalue of expression e on the
-   stack top (and thus extend the current stack frame with one element).
+   stack top (and thus extend the current stack frame with one element).  
 *)
 
-and cExpr (e: expr) (varEnv: VarEnv) (funEnv: FunEnv) : instr list =
+and cExpr (e : expr) (varEnv : VarEnv) (funEnv : FunEnv) : instr list = 
     match e with
-    | PreInc acc ->
-        cAccess acc varEnv funEnv
-        @ [ DUP ] @ [ LDI ] @ [ CSTI 1 ] @ [ ADD ] @ [ STI ]
-    | PreDec acc ->
-        cAccess acc varEnv funEnv
-        @ [ DUP ] @ [ LDI ] @ [ CSTI 1 ] @ [ SUB ] @ [ STI ]
-    | PostInc acc ->
-        cAccess acc varEnv funEnv
-        @ [ DUP ]
-          @ [ LDI ]
-            @ [ SWAP ]
-              @ [ DUP ]
-                @ [ LDI ]
-                  @ [ CSTI 1 ] @ [ ADD ] @ [ STI ] @ [ INCSP -1 ]
-    | PostDec acc ->
-        cAccess acc varEnv funEnv
-        @ [ DUP ]
-          @ [ LDI ]
-            @ [ SWAP ]
-              @ [ DUP ]
-                @ [ LDI ]
-                  @ [ CSTI 1 ] @ [ SUB ] @ [ STI ] @ [ INCSP -1 ]
-    | Access acc -> cAccess acc varEnv funEnv @ [ LDI ]
-    | Assign (acc, e) ->
-        cAccess acc varEnv funEnv
-        @ cExpr e varEnv funEnv @ [ STI ]
-    | CstI i -> [ CSTI i ]
-    | Addr acc -> cAccess acc varEnv funEnv
-    | AssignPrim (ope, acc, e) ->
-        let getOpe ope1 =
-            match ope1 with
-            | "+=" -> [ ADD ]
-            | "-=" -> [ SUB ]
-            | "*=" -> [ MUL ]
-            | "/=" -> [ DIV ]
-            | "%=" -> [ MOD ]
-
-        cAccess acc varEnv funEnv
-        @ [ DUP ]
-          @ [ LDI ]
-            @ cExpr e varEnv funEnv @ (getOpe ope) @ [ STI ]
-    | Prim1 (ope, e1) ->
-        cExpr e1 varEnv funEnv
-        @ (match ope with
-           | "!" -> [ NOT ]
-           | "printi" -> [ PRINTI ]
-           | "printc" -> [ PRINTC ]
-           | _ -> raise (Failure "unknown primitive 1"))
-    | Prim2 (ope, e1, e2) ->
-        cExpr e1 varEnv funEnv
-        @ cExpr e2 varEnv funEnv
-          @ (match ope with
-             | "*" -> [ MUL ]
-             | "+" -> [ ADD ]
-             | "-" -> [ SUB ]
-             | "/" -> [ DIV ]
-             | "%" -> [ MOD ]
-             | "==" -> [ EQ ]
-             | "!=" -> [ EQ; NOT ]
-             | "<" -> [ LT ]
-             | ">=" -> [ LT; NOT ]
-             | ">" -> [ SWAP; LT ]
-             | "<=" -> [ SWAP; LT; NOT ]
-             | _ -> raise (Failure "unknown primitive 2"))
-    | Andalso (e1, e2) ->
-        let labend = newLabel ()
-        let labfalse = newLabel ()
-
-        cExpr e1 varEnv funEnv
-        @ [ IFZERO labfalse ]
-          @ cExpr e2 varEnv funEnv
-            @ [ GOTO labend
-                Label labfalse
-                CSTI 0
-                Label labend ]
-    | Orelse (e1, e2) ->
-        let labend = newLabel ()
-        let labtrue = newLabel ()
-
-        cExpr e1 varEnv funEnv
-        @ [ IFNZRO labtrue ]
-          @ cExpr e2 varEnv funEnv
-            @ [ GOTO labend
-                Label labtrue
-                CSTI 1
-                Label labend ]
-    | Call (f, es) -> callfun f es varEnv funEnv
+    | PreInc acc     -> cAccess acc varEnv funEnv @ [DUP] @ [LDI] @ [CSTI 1] @ [ADD] @ [STI]
+    | PreDec acc     -> cAccess acc varEnv funEnv @ [DUP] @ [LDI] @ [CSTI 1] @ [SUB] @ [STI]  
+    | PostInc acc    -> cAccess acc varEnv funEnv @ [DUP] @ [LDI] @ [SWAP] @ [DUP] @ [LDI] @ [CSTI 1] @ [ADD] @ [STI] @ [INCSP -1]
+    | PostDec acc    -> cAccess acc varEnv funEnv @ [DUP] @ [LDI] @ [SWAP] @ [DUP] @ [LDI] @ [CSTI 1] @ [SUB] @ [STI] @ [INCSP -1]
+    | Access acc     -> cAccess acc varEnv funEnv @ [LDI] 
+    | Assign(acc, e) -> cAccess acc varEnv funEnv @ cExpr e varEnv funEnv @ [STI]
+    | CstI i         -> [CSTI i]
+    | Addr acc       -> cAccess acc varEnv funEnv
+    | AssignPrim(ope, acc, e) -> 
+      let getOpe ope1 =
+         match ope1 with
+        | "+=" -> [ADD]
+        | "-=" -> [SUB]
+        | "*=" -> [MUL]
+        | "/=" -> [DIV]
+        | "%=" -> [MOD]
+      cAccess acc varEnv funEnv @ [DUP] @ [LDI] @ cExpr e varEnv funEnv @ (getOpe ope) @ [STI]
+    | Prim1(ope, e1) ->
+      cExpr e1 varEnv funEnv
+      @ (match ope with
+         | "!"      -> [NOT]
+         | "printi" -> [PRINTI]
+         | "printc" -> [PRINTC]
+         | "~"      -> [BITNOT]
+         | _        -> raise (Failure "unknown primitive 1"))
+    | Prim2(ope, e1, e2) ->
+      cExpr e1 varEnv funEnv
+      @ cExpr e2 varEnv funEnv
+      @ (match ope with
+         | "*"   -> [MUL]
+         | "+"   -> [ADD]
+         | "-"   -> [SUB]
+         | "/"   -> [DIV]
+         | "%"   -> [MOD]
+         | "=="  -> [EQ]
+         | "!="  -> [EQ; NOT]
+         | "<"   -> [LT]
+         | ">="  -> [LT; NOT]
+         | ">"   -> [SWAP; LT]
+         | "<="  -> [SWAP; LT; NOT]
+         | "&"   -> [BITAND]
+         | "|"   -> [BITOR]
+         | "^"   -> [BITXOR]
+         | "<<"  -> [BITLEFT]
+         | ">>"  -> [BITRIGHT]
+         | _     -> raise (Failure "unknown primitive 2"))
+    | Prim3(e1, e2, e3) ->
+      let labelse = newLabel()
+      let labend  = newLabel()
+      cExpr e1 varEnv funEnv @ [IFZERO labelse] 
+      @ cExpr e2 varEnv funEnv @ [GOTO labend]
+      @ [Label labelse] @ cExpr e3 varEnv funEnv
+      @ [Label labend]
+    | Max(e1, e2)-> 
+      let labelse = newLabel()
+      let labend = newLabel()
+      cExpr e1 varEnv funEnv @ cExpr e2 varEnv funEnv @ [LT] @ [IFNZRO labelse]
+      @ cExpr e1 varEnv funEnv @ [GOTO labend;Label labelse] @ cExpr e2 varEnv funEnv
+      @ [Label labend]  
+    | Min(e1, e2)->
+      let labelse = newLabel()
+      let labend = newLabel()
+      cExpr e1 varEnv funEnv @ cExpr e2 varEnv funEnv @ [LT] @ [IFNZRO labelse]
+      @ cExpr e2 varEnv funEnv @ [GOTO labend;Label labelse] @ cExpr e1 varEnv funEnv
+      @ [Label labend]
+    | Andalso(e1, e2) ->
+      let labend   = newLabel()
+      let labfalse = newLabel()
+      cExpr e1 varEnv funEnv
+      @ [IFZERO labfalse]
+      @ cExpr e2 varEnv funEnv
+      @ [GOTO labend; Label labfalse; CSTI 0; Label labend]            
+    | Orelse(e1, e2) -> 
+      let labend  = newLabel()
+      let labtrue = newLabel()
+      cExpr e1 varEnv funEnv
+      @ [IFNZRO labtrue]
+      @ cExpr e2 varEnv funEnv
+      @ [GOTO labend; Label labtrue; CSTI 1; Label labend]
+    | Call(f, es) -> callfun f es varEnv funEnv
 
 (* Generate code to access variable, dereference pointer or index array.
    The effect of the compiled code is to leave an lvalue on the stack.   *)
 
 and cAccess access varEnv funEnv : instr list =
-    match access with
+    match access with 
     | AccVar x ->
-        match lookup (fst varEnv) x with
-        | Glovar addr, _ -> [ CSTI addr ]
-        | Locvar addr, _ -> [ GETBP; CSTI addr; ADD ]
+      match lookup (fst varEnv) x with
+      | Glovar addr, _ -> [CSTI addr]
+      | Locvar addr, _ -> [GETBP; CSTI addr; ADD]
     | AccDeref e -> cExpr e varEnv funEnv
-    | AccIndex (acc, idx) ->
-        cAccess acc varEnv funEnv
-        @ [ LDI ] @ cExpr idx varEnv funEnv @ [ ADD ]
+    | AccIndex(acc, idx) -> cAccess acc varEnv funEnv 
+                            @ [LDI] @ cExpr idx varEnv funEnv @ [ADD]
 
 (* Generate code to evaluate a list es of expressions: *)
 
-and cExprs es varEnv funEnv : instr list =
-    List.concat (List.map (fun e -> cExpr e varEnv funEnv) es)
+and cExprs es varEnv funEnv : instr list = 
+    List.concat(List.map (fun e -> cExpr e varEnv funEnv) es)
 
 (* Generate code to evaluate arguments es and then call function f: *)
-
+    
 and callfun f es varEnv funEnv : instr list =
     let (labf, tyOpt, paramdecs) = lookup funEnv f
     let argc = List.length es
-
     if argc = List.length paramdecs then
-        cExprs es varEnv funEnv @ [ CALL(argc, labf) ]
+      cExprs es varEnv funEnv @ [CALL(argc, labf)]
     else
-        raise (Failure(f + ": parameter/argument mismatch"))
+      raise (Failure (f + ": parameter/argument mismatch"))
 
 
 (* Compile a complete micro-C program: globals, call to main, functions *)
 
-let cProgram (Prog topdecs) : instr list =
+let cProgram (Prog topdecs) : instr list = 
     let _ = resetLabels ()
     let ((globalVarEnv, _), funEnv, globalInit) = makeGlobalEnvs topdecs
-
     let compilefun (tyOpt, f, xs, body) =
         let (labf, _, paras) = lookup funEnv f
         let (envf, fdepthf) = bindParams paras (globalVarEnv, 0)
         let code = cStmt body (envf, fdepthf) funEnv
-
-        [ Label labf ]
-        @ code @ [ RET(List.length paras - 1) ]
-
-    let functions =
-        List.choose
-            (function
-            | Fundec (rTy, name, argTy, body) -> Some(compilefun (rTy, name, argTy, body))
-            | Vardec _ -> None)
-            topdecs
-
+        [Label labf] @ code @ [RET (List.length paras-1)]
+    let functions = 
+        List.choose (function 
+                         | Fundec (rTy, name, argTy, body) 
+                                    -> Some (compilefun (rTy, name, argTy, body))
+                         | Vardec _ -> None)
+                    topdecs 
     let (mainlab, _, mainparams) = lookup funEnv "main"
     let argc = List.length mainparams
-
-    globalInit
-    @ [ LDARGS; CALL(argc, mainlab); STOP ]
-      @ List.concat functions
+    globalInit 
+    @ [LDARGS; CALL(argc, mainlab); STOP] 
+    @ List.concat functions
 
 (* Compile a complete micro-C and write the resulting instruction list
    to file fname; also, return the program as a list of instructions.
  *)
 
-let intsToFile (inss: int list) (fname: string) =
+let intsToFile (inss : int list) (fname : string) = 
     File.WriteAllText(fname, String.concat " " (List.map string inss))
 
 let compileToFile program fname =
 
     info (fun () -> printfn "program:\n %A" program)
 
-    let instrs = cProgram program
-    info (fun () -> printfn "\nStack VM instrs: %A\n" instrs)
+    let instrs   = cProgram program 
+    info (fun () -> printfn "\nStack VM instrs: %A\n" instrs )
 
     let bytecode = code2ints instrs
     info (fun () -> printfn "Stack VM numeric code: %A\n" bytecode)

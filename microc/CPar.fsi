@@ -13,25 +13,31 @@ type token =
   | ASSIGN
   | AMP
   | COLON
+  | QST
+  | PLUSASSIGN
+  | MINUSASSIGN
+  | TIMESASSIGN
+  | DIVASSIGN
+  | MODASSIGN
   | NOT
   | SEQOR
   | SEQAND
+  | BITNOT
   | EQ
   | NE
   | GT
   | LT
   | GE
   | LE
-  | PLUSASSIGN
-  | MINUSASSIGN
-  | TIMESASSIGN
-  | DIVASSIGN
-  | MODASSIGN
   | PLUS
   | MINUS
   | TIMES
   | DIV
   | MOD
+  | BITLEFT
+  | BITRIGHT
+  | BITXOR
+  | BITOR
   | SELFPLUS
   | SELFMINUS
   | CHAR
@@ -49,7 +55,13 @@ type token =
   | SWITCH
   | CASE
   | DEFAULT
+  | STRUCT
   | BREAK
+  | CONTINUE
+  | MAX
+  | MIN
+  | IN
+  | RANGE
   | CSTSTRING of (string)
   | NAME of (string)
   | CSTINT of (int)
@@ -67,25 +79,31 @@ type tokenId =
     | TOKEN_ASSIGN
     | TOKEN_AMP
     | TOKEN_COLON
+    | TOKEN_QST
+    | TOKEN_PLUSASSIGN
+    | TOKEN_MINUSASSIGN
+    | TOKEN_TIMESASSIGN
+    | TOKEN_DIVASSIGN
+    | TOKEN_MODASSIGN
     | TOKEN_NOT
     | TOKEN_SEQOR
     | TOKEN_SEQAND
+    | TOKEN_BITNOT
     | TOKEN_EQ
     | TOKEN_NE
     | TOKEN_GT
     | TOKEN_LT
     | TOKEN_GE
     | TOKEN_LE
-    | TOKEN_PLUSASSIGN
-    | TOKEN_MINUSASSIGN
-    | TOKEN_TIMESASSIGN
-    | TOKEN_DIVASSIGN
-    | TOKEN_MODASSIGN
     | TOKEN_PLUS
     | TOKEN_MINUS
     | TOKEN_TIMES
     | TOKEN_DIV
     | TOKEN_MOD
+    | TOKEN_BITLEFT
+    | TOKEN_BITRIGHT
+    | TOKEN_BITXOR
+    | TOKEN_BITOR
     | TOKEN_SELFPLUS
     | TOKEN_SELFMINUS
     | TOKEN_CHAR
@@ -103,7 +121,13 @@ type tokenId =
     | TOKEN_SWITCH
     | TOKEN_CASE
     | TOKEN_DEFAULT
+    | TOKEN_STRUCT
     | TOKEN_BREAK
+    | TOKEN_CONTINUE
+    | TOKEN_MAX
+    | TOKEN_MIN
+    | TOKEN_IN
+    | TOKEN_RANGE
     | TOKEN_CSTSTRING
     | TOKEN_NAME
     | TOKEN_CSTINT

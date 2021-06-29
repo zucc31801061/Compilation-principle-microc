@@ -35,7 +35,8 @@ class Machine {
     GOTO = 16, IFZERO = 17, IFNZRO = 18, CALL = 19, TCALL = 20, RET = 21, 
     PRINTI = 22, PRINTC = 23, 
     LDARGS = 24,
-    STOP = 25;
+    STOP = 25,
+    BITAND = 26,BITOR = 27,BITXOR = 28,BITLEFT = 29,BITRIGHT = 30, BITNOT = 31;
 
   final static int STACKSIZE = 1000;
   
@@ -62,54 +63,54 @@ class Machine {
     int pc = 0;		// Program counter: next instruction
     for (;;) {
       if (trace) 
-        printsppc(s, bp, sp, p, pc);
+        printsppc(s, bp, sp, p, pc);                // Print the stack information, current instruction position and instruction number of each step
       switch (p[pc++]) {
       case CSTI:
-        s[sp+1] = p[pc++]; sp++; break;
+        s[sp+1] = p[pc++]; sp++; break;             // Put the contents of the current P at the top of the stack
       case ADD: 
-        s[sp-1] = s[sp-1] + s[sp]; sp--; break;
+        s[sp-1] = s[sp-1] + s[sp]; sp--; break;     // Add the first two numbers at the top of the stack, and the result moves to the next position at the top of the stack together with the top of the stack
       case SUB: 
-        s[sp-1] = s[sp-1] - s[sp]; sp--; break;
+        s[sp-1] = s[sp-1] - s[sp]; sp--; break;     // subtraction s[sp-1] -s[sp]
       case MUL: 
-        s[sp-1] = s[sp-1] * s[sp]; sp--; break;
+        s[sp-1] = s[sp-1] * s[sp]; sp--; break;     // multiplication
       case DIV: 
-        s[sp-1] = s[sp-1] / s[sp]; sp--; break;
+        s[sp-1] = s[sp-1] / s[sp]; sp--; break;     // division
       case MOD: 
-        s[sp-1] = s[sp-1] % s[sp]; sp--; break;
+        s[sp-1] = s[sp-1] % s[sp]; sp--; break;     // In addition to
       case EQ: 
-        s[sp-1] = (s[sp-1] == s[sp] ? 1 : 0); sp--; break;
+        s[sp-1] = (s[sp-1] == s[sp] ? 1 : 0); sp--; break;     // Whether the top of the stack is equal to the next one on the top of the stack, equal to 1, otherwise 0, stored in the next one on the top of the stack
       case LT: 
-        s[sp-1] = (s[sp-1] < s[sp] ? 1 : 0); sp--; break;
+        s[sp-1] = (s[sp-1] < s[sp] ? 1 : 0); sp--; break;     // less than
       case NOT: 
-        s[sp] = (s[sp] == 0 ? 1 : 0); break;
+        s[sp] = (s[sp] == 0 ? 1 : 0); break;            // If it is equal to 0, take 1, otherwise take 0
       case DUP: 
-        s[sp+1] = s[sp]; sp++; break;
+        s[sp+1] = s[sp]; sp++; break;                 // Copy a stack top value
       case SWAP: 
-        { int tmp = s[sp];  s[sp] = s[sp-1];  s[sp-1] = tmp; } break; 
+        { int tmp = s[sp];  s[sp] = s[sp-1];  s[sp-1] = tmp; } break;    // The first two values are exchanged
       case LDI:                 // load indirect
-        s[sp] = s[s[sp]]; break;
+        s[sp] = s[s[sp]]; break;              // Take the top of the stack as the address in the stack, and assign the value of the address to the top of the stack
       case STI:                 // store indirect, keep value on top
-        s[s[sp-1]] = s[sp]; s[sp-1] = s[sp]; sp--; break;
+        s[s[sp-1]] = s[sp]; s[sp-1] = s[sp]; sp--; break;     // The top value of the stack is stored in the address represented by the last value of the top of the stack, and the top of the stack becomes the last value, which is the original top value of the stack
       case GETBP:
-        s[sp+1] = bp; sp++; break;
+        s[sp+1] = bp; sp++; break;                      // Add BP as the top of the stack
       case GETSP:
-        s[sp+1] = sp; sp++; break;
+        s[sp+1] = sp; sp++; break;                      // Get the current stack address
       case INCSP:
-        sp = sp+p[pc++]; break;
+        sp = sp+p[pc++]; break;                         // Stack address offset, sp+=sp+p[pc]
       case GOTO:
-        pc = p[pc]; break;
+        pc = p[pc]; break;                              // The program goes to p[pc]
       case IFZERO:
-        pc = (s[sp--] == 0 ? p[pc] : pc+1); break;
+        pc = (s[sp--] == 0 ? p[pc] : pc+1); break;      // Consume the top of the stack. If the top of the stack is 0, jump to p[pc], otherwise pc continues to move forward
       case IFNZRO:
-        pc = (s[sp--] != 0 ? p[pc] : pc+1); break;
+        pc = (s[sp--] != 0 ? p[pc] : pc+1); break;      // Contrary to ifzero
       case CALL: { 
-        int argc = p[pc++];
+        int argc = p[pc++];           // Number of input parameters
         for (int i=0; i<argc; i++)	   // Make room for return address
           s[sp-i+2] = s[sp-i];		   // and old base pointer
         s[sp-argc+1] = pc+1; sp++; 
         s[sp-argc+1] = bp;   sp++; 
-        bp = sp+1-argc;
-        pc = p[pc]; 
+        bp = sp+1-argc;                // BP equals the position of the first parameter
+        pc = p[pc];                   //
       } break; 
       case TCALL: { 
         int argc = p[pc++];                // Number of new arguments
@@ -118,21 +119,33 @@ class Machine {
           s[sp-i-pop] = s[sp-i];
         sp = sp - pop; pc = p[pc]; 
       } break; 
-      case RET: { 
+      case RET: {                           // Get BP and return address, SP returns to the position before calling, and the top of stack is set to res
         int res = s[sp]; 
         sp = sp-p[pc]; bp = s[--sp]; pc = s[--sp]; 
         s[sp] = res; 
       } break; 
-      case PRINTI:
-        System.out.print(s[sp] + " "); break; 
-      case PRINTC:
-        System.out.print((char)(s[sp])); break; 
-      case LDARGS:
-	for (int i=0; i<iargs.length; i++) // Push commandline arguments
-	  s[++sp] = iargs[i];
-	break;
-      case STOP:
+      case PRINTI:                        // print int
+        System.out.print(s[sp] + " "); break;
+      case PRINTC:                       //  print char
+        System.out.print((char)(s[sp])); break;
+      case LDARGS:                       //  Initialize the stack and store the parameters in the stack
+        for (int i=0; i<iargs.length; i++) // Push commandline arguments
+          s[++sp] = iargs[i];
+        break;
+      case STOP:                           // Return to top of stack address
         return sp;
+      case BITLEFT: 
+          s[sp-1] = s[sp-1] << s[sp]; sp--; break;
+      case BITRIGHT: 
+          s[sp-1] = s[sp-1] >> s[sp]; sp--; break;
+      case BITAND: 
+          s[sp-1] = s[sp-1] & s[sp]; sp--; break;
+      case BITOR: 
+          s[sp-1] = s[sp-1] | s[sp]; sp--; break;
+      case BITXOR: 
+          s[sp-1] = s[sp-1] ^ s[sp]; sp--; break;
+	    case BITNOT: 
+          s[sp] = ~s[sp]; break;
       default:                  
         throw new RuntimeException("Illegal instruction " + p[pc-1] 
                                    + " at address " + (pc-1));

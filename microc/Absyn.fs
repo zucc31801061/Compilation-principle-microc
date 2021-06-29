@@ -23,30 +23,36 @@ and expr =
   | Addr of access                   (* &x   or  &*p   or  &a[e]    *)
   | AssignPrim of string * access * expr(* x+=e or *p+=e or a[e]+=e *)
   | CstI of int                      (* Constant                    *)
+  | CstS of string
+  | Max of expr * expr
+  | Min of expr * expr
   | Prim1 of string * expr           (* Unary primitive operator    *)
   | Prim2 of string * expr * expr    (* Binary primitive operator   *)
+  | Prim3 of expr * expr * expr      (* a?b:c                       *)
   | Andalso of expr * expr           (* Sequential and              *)
   | Orelse of expr * expr            (* Sequential or               *)
   | Call of string * expr list       (* Function call f(...)        *)
                                                                    
-and access =
+and access =                                                       
   | AccVar of string                 (* Variable access        x    *) 
   | AccDeref of expr                 (* Pointer dereferencing  *p   *)
   | AccIndex of access * expr        (* Array indexing         a[e] *)
                                                                    
-and stmt =
+and stmt =                                                         
   | If of expr * stmt * stmt         (* Conditional                 *)
   | While of expr * stmt             (* While loop                  *)
   | Expr of expr                     (* Expression statement   e;   *)
   | Return of expr option            (* Return from method          *)
   | Block of stmtordec list          (* Block: grouping and scope   *)
   | For of expr * expr * expr * stmt (* for(i = 0; i <= n; i++)     *)
+  | ForIn of expr * expr * expr * stmt 
   | DoWhile of  stmt * expr          (* DoWhile loop                *)
-  | Switch of expr * (expr * stmt) list                (* switch no default           *)
-  | SwitchDefault of expr * (expr * stmt) list * stmt  (* switch with default         *)
+  | Switch of expr * (expr * stmt) list                 (* switch no default      *)
+  | SwitchDefault of expr * (expr * stmt) list * stmt   (* switch with default    *)
   | Break
+  | Continue
                                                                    
-and stmtordec =
+and stmtordec =                                                    
   | Dec of typ * string              (* Local variable declaration  *)
   | DecAssign of typ * string * expr (* declaration and assign      *)
   | Stmt of stmt                     (* A statement                 *)

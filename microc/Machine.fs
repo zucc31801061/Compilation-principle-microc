@@ -41,6 +41,12 @@ type instr =
   | PRINTC                             (* print s[sp] as character        *)
   | LDARGS                             (* load command line args on stack *)
   | STOP                               (* halt the abstract machine       *)
+  | BITAND                             
+  | BITOR                              
+  | BITXOR                             
+  | BITLEFT                            
+  | BITRIGHT                           
+  | BITNOT                             
 
 (* Generate new distinct labels *)
 
@@ -167,7 +173,23 @@ let CODELDARGS = 24
 [<Literal>]
 let CODESTOP   = 25;
 
+[<Literal>]
+let CODEBITAND   = 26;
 
+[<Literal>]
+let CODEBITOR   = 27;
+
+[<Literal>]
+let CODEBITXOR   = 28;
+
+[<Literal>]
+let CODEBITLEFT   = 29;
+
+[<Literal>]
+let CODEBITRIGHT  = 30;
+
+[<Literal>]
+let CODEBITNOT  = 31;
 
 (* Bytecode emission, first pass: build environment that maps 
    each label to an integer address in the bytecode.
@@ -203,6 +225,12 @@ let makelabenv (addr, labenv) instr =
     | PRINTC         -> (addr+1, labenv)
     | LDARGS         -> (addr+1, labenv)
     | STOP           -> (addr+1, labenv)
+    | BITAND         -> (addr+1, labenv)
+    | BITOR          -> (addr+1, labenv)
+    | BITXOR         -> (addr+1, labenv)
+    | BITLEFT        -> (addr+1, labenv)
+    | BITRIGHT       -> (addr+1, labenv)
+    | BITNOT         -> (addr+1, labenv)
 
 (* Bytecode emission, second pass: output bytecode as integers *)
 
@@ -238,6 +266,12 @@ let rec emitints getlab instr ints =
     | PRINTC         -> CODEPRINTC :: ints
     | LDARGS         -> CODELDARGS :: ints
     | STOP           -> CODESTOP   :: ints
+    | BITAND         -> CODEBITAND :: ints
+    | BITOR          -> CODEBITOR  :: ints
+    | BITXOR         -> CODEBITXOR :: ints
+    | BITLEFT        -> CODEBITLEFT :: ints
+    | BITRIGHT       -> CODEBITRIGHT :: ints
+    | BITNOT         -> CODEBITNOT :: ints
 
 
 (* Convert instruction list to int list in two passes:
@@ -295,6 +329,12 @@ let rec decomp ints : instr list =
     | CODEPRINTC :: ints_rest                         ->   PRINTC        :: decomp ints_rest
     | CODELDARGS :: ints_rest                         ->   LDARGS        :: decomp ints_rest
     | CODESTOP   :: ints_rest                         ->   STOP             :: decomp ints_rest
-    | CODECSTI   :: i :: ints_rest                    ->   CSTI i :: decomp ints_rest       
+    | CODECSTI   :: i :: ints_rest                    ->   CSTI i :: decomp ints_rest   
+    | CODEBITLEFT :: ints_rest                        ->   BITLEFT       :: decomp ints_rest
+    | CODEBITNOT :: ints_rest                         ->   BITNOT        :: decomp ints_rest
+    | CODEBITRIGHT :: ints_rest                       ->   BITRIGHT      :: decomp ints_rest  
+    | CODEBITAND :: ints_rest                         ->   BITAND        :: decomp ints_rest
+    | CODEBITOR :: ints_rest                          ->   BITOR         :: decomp ints_rest
+    | CODEBITXOR :: ints_rest                         ->   BITXOR        :: decomp ints_rest    
     | _                                       ->    printf "%A" ints; failwith "unknow code"
 

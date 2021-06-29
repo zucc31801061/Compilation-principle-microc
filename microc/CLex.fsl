@@ -34,7 +34,13 @@ let keyword s =
     | "switch"  -> SWITCH
     | "case"    -> CASE
     | "default" -> DEFAULT
-    | "break"   -> BREAK
+    | "break"   -> BREAK 
+    | "continue"-> CONTINUE
+    | "Struct"  -> STRUCT
+    | "max"     -> MAX
+    | "min"     -> MIN
+    | "in"      -> IN
+    | "range"   -> RANGE
     | _         -> NAME s   // 缺省情况，是标识符的名字，如 函数名，变量名等
                             // 当所有的关键字没有匹配成功时，则当成标识符
 // 字符串转义符处理函数
@@ -90,45 +96,43 @@ rule Token = parse          // 每个 规则rule 会生成为一个函数，函�
   | ';'             { SEMI }
   | ','             { COMMA }
   | ':'             { COLON }
-  | "//"            { EndLineComment lexbuf; Token lexbuf }  //单行注释处理规则，调用响应处理函数
-                                                             //参数是 lexbuf
-                                                             // 处理完后 lexbuf 内容已经更新，注释部分过滤
-                                                             //调用 Token 规则函数继续注释部分后面的处理
-  | "/*"            { Comment lexbuf; Token lexbuf }   // 多行注释，调用 Comment规则
-  | '"'             { CSTSTRING (String [] lexbuf) }   // 调用字符串处理规则
+  | '?'             { QST }
+  | "~"             { BITNOT }
+  | "<<"            { BITLEFT }
+  | ">>"            { BITRIGHT }
+  | "^"             { BITXOR }       
+  | "|"             { BITOR }
+  | "//"            { EndLineComment lexbuf; Token lexbuf }
+  | "/*"            { Comment lexbuf; Token lexbuf }
+  | '"'             { CSTSTRING (String [] lexbuf) }
   | eof             { EOF }
   | _               { failwith "Lexer error: illegal symbol" }
 
 and Comment = parse
-   | "/*"           { Comment lexbuf; Comment lexbuf }  // 注释的嵌套处理
-   | "*/"           { () }                           // 注释处理结束
-   | '\n'           { lexbuf.EndPos <- lexbuf.EndPos.NextLine; Comment lexbuf } //注释跨行处理
-   | (eof | '\026') { failwith "Lexer error: unterminated comment" }  // 多行注释未封闭
-   | _              { Comment lexbuf }  // 其他任意情况都继续处理后续字符
+   | "/*"           { Comment lexbuf; Comment lexbuf }
+   | "*/"           { () }
+   | '\n'           { lexbuf.EndPos <- lexbuf.EndPos.NextLine; Comment lexbuf }
+   | (eof | '\026') { failwith "Lexer error: unterminated comment" }
+   | _              { Comment lexbuf }
 
 and EndLineComment = parse
-   | '\n'           { lexbuf.EndPos <- lexbuf.EndPos.NextLine }  //更新行尾位置，返回
-   | (eof | '\026') { () }   // 文件结束，26 是 CTRL+Z的ASCII码，也是结束符 , () 退出返回
-   | _              { EndLineComment lexbuf }  // 继续读lexbuf 中下个字符
+   | '\n'           { lexbuf.EndPos <- lexbuf.EndPos.NextLine }
+   | (eof | '\026') { () }
+   | _              { EndLineComment lexbuf }
 
 and String chars = parse 
   | '"'
       { Microsoft.FSharp.Core.String.concat "" (List.map string (List.rev chars)) } 
-                                                        // 字符串结束，通过字符数组chars构造字符串
-                                                        // 由于构造的时候是列表 cons ::操作
-                                                        // 这里需要用List.rev 翻转字符数组
-  | '\\' ['\\' '"' 'a' 'b' 't' 'n' 'v' 'f' 'r']   //字符串 "\a" 读入后词法分析器 看到的是 "\\a"
+  | '\\' ['\\' '"' 'a' 'b' 't' 'n' 'v' 'f' 'r']
       { String (cEscape (lexemeAsString lexbuf) :: chars) lexbuf }
   | "''" 
       { String ('\'' :: chars) lexbuf }
   | '\\'
       { failwith "Lexer error: illegal escape sequence" }
   | (eof | '\026')       { failwith "Lexer error: unterminated string" } 
-                                                   // 字符串中出现文件结束
-
-  | ['\n' '\r']  { failwith "Lexer error: newline in string" }  //字符串中出现回车
+  | ['\n' '\r']  { failwith "Lexer error: newline in string" }
 
   | ['\000'-'\031' '\127' '\255']    
-      { failwith "Lexer error: invalid character in string" }  // 字符串中出现 ASCII 控制字符
+      { failwith "Lexer error: invalid character in string" }
   | _
-      { String (char (lexbuf.LexemeChar 0) :: chars) lexbuf } // 将读到的第1个字符加到临时的chars数组
+      { String (char (lexbuf.LexemeChar 0) :: chars) lexbuf }
