@@ -2,7 +2,7 @@
 
 ## 实验报告
 
-![](D:\计算机科学\study2021上\编程语言原理与编译\大作业\img\zucc.png)
+![](https://github.com/zucc31801061/microc-c/blob/master/img/zucc.png)
 
 -   课程名称: <u>编程语言原理与编译</u>
 -   实验项目: <u>期末大作业</u>
@@ -23,9 +23,9 @@
 
 - 代码提交日志
 
-  ![1](.\img\1.png)
+  ![1](https://github.com/zucc31801061/microc-c/blob/master/img/1.png)
 
-  ![2](.\img\2.png)
+  ![2](https://github.com/zucc31801061/microc-c/blob/master/img/2.png)
 
 ## 功能介绍
 
@@ -111,11 +111,11 @@ java Machinetrace test_init.out
 
     运行结果：
 
-    ![init-result](.\img\init-result.png)
+    ![init-result](https://github.com/zucc31801061/microc-c/blob/master/img/init-result.png)
 
     运行栈：
 
-    ![init-trace](.\img\init-trace.png)
+    ![init-trace](https://github.com/zucc31801061/microc-c/blob/master/img/init-trace.png)
 
 ---
 
@@ -137,11 +137,11 @@ java Machinetrace test_init.out
     ```
 
     运行结果：  
-    ![spsm-result](.\img\spsm-result.png)
+    ![spsm-result](https://github.com/zucc31801061/microc-c/blob/master/img/spsm-result.png)
 
     运行栈：
 
-    ![spsm-trace](.\img\spsm-trace.png)
+    ![spsm-trace](https://github.com/zucc31801061/microc-c/blob/master/img/spsm-trace.png)
 
 ---
 
@@ -161,11 +161,11 @@ java Machinetrace test_init.out
     ```
 
     运行结果：  
-    ![for-result](.\img\for-result.png)
+    ![for-result](https://github.com/zucc31801061/microc-c/blob/master/img/for-result.png)
 
     运行栈：
 
-    ![for-trace](.\img\for-trace.png)
+    ![for-trace](https://github.com/zucc31801061/microc-c/blob/master/img/for-trace.png)
 
 ---
 
@@ -187,10 +187,10 @@ java Machinetrace test_init.out
     
     运行结果：
     
-    ![dowhile-result](.\img\dowhile-result.png)
+    ![dowhile-result](https://github.com/zucc31801061/microc-c/blob/master/img/dowhile-result.png)
     运行栈：
     
-    ![dowhile-trace](.\img\dowhile-trace.png)
+    ![dowhile-trace](https://github.com/zucc31801061/microc-c/blob/master/img/dowhile-trace.png)
 
 ---
 
@@ -210,11 +210,11 @@ java Machinetrace test_init.out
 
     运行结果： 
     
-    ![prim3-result](.\img\prim3-result.png)
+    ![prim3-result](https://github.com/zucc31801061/microc-c/blob/master/img/prim3-result.png)
     
     运行栈：
     
-    ![prim3-trace](.\img\prim3-trace.png)
+    ![prim3-trace](https://github.com/zucc31801061/microc-c/blob/master/img/prim3-trace.png)
 
 ---
 
@@ -235,10 +235,10 @@ java Machinetrace test_init.out
 
     运行结果：
 
-    ![forin-result](.\img\forin-result.png)
+    ![forin-result](https://github.com/zucc31801061/microc-c/blob/master/img/forin-result.png)
     运行栈：
 
-    ![forin-trace](.\img\forin-trace.png)
+    ![forin-trace](https://github.com/zucc31801061/microc-c/blob/master/img/forin-trace.png)
 
 ---
 
@@ -264,9 +264,9 @@ java Machinetrace test_init.out
     
     运行结果： 
 
-    ![switch-result](.\img\switch-result.png)
+    ![switch-result](https://github.com/zucc31801061/microc-c/blob/master/img/switch-result.png)
     
-    运行栈：![switch-trace](.\img\switch-trace.png)
+    运行栈：![switch-trace](https://github.com/zucc31801061/microc-c/blob/master/img/switch-trace.png)
 
 ---
 
@@ -293,9 +293,9 @@ java Machinetrace test_init.out
     
     运行结果： 
     
-    ![assop-result](.\img\assop-result.png)运行栈：
+    ![assop-result](https://github.com/zucc31801061/microc-c/blob/master/img/assop-result.png)运行栈：
     
-    ![assop-trace](.\img\assop-trace.png)
+    ![assop-trace](https://github.com/zucc31801061/microc-c/blob/master/img/assop-trace.png)
 
 ---
 
@@ -314,11 +314,11 @@ java Machinetrace test_init.out
     
     运行结果： 
     
-    ![logic-result](.\img\logic-result.png)
+    ![logic-result](https://github.com/zucc31801061/microc-c/blob/master/img/logic-result.png)
     
     运行栈：
     
-    ![logic-trace](.\img\logic-trace.png)
+    ![logic-trace](https://github.com/zucc31801061/microc-c/blob/master/img/logic-trace.png)
 
 ---
 
@@ -336,11 +336,11 @@ java Machinetrace test_init.out
 
     运行结果： 
     
-    ![shift-result](.\img\shift-result.png)
+    ![shift-result](https://github.com/zucc31801061/microc-c/blob/master/img/shift-result.png)
     
     运行栈：
     
-    ![shift-trace](.\img\shift-trace.png)
+    ![shift-trace](https://github.com/zucc31801061/microc-c/blob/master/img/shift-trace.png)
 
 ---
 
@@ -357,11 +357,11 @@ java Machinetrace test_init.out
 
     运行结果： 
     
-    ![maxmin-result](.\img\maxmin-result.png)
+    ![maxmin-result](https://github.com/zucc31801061/microc-c/blob/master/img/maxmin-result.png)
     
     运行栈：
     
-    ![maxmin-trace](.\img\maxmin-trace.png)
+    ![maxmin-trace](https://github.com/zucc31801061/microc-c/blob/master/img/maxmin-trace.png)
 
 ---
 
